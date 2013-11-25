@@ -1,0 +1,3 @@
+[submodule "components/MathBox"]
+	path = components/MathBox
+	url = https://github.com/unconed/MathBox.js.git

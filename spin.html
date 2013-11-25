@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>MRI Spin</title>
+
+  <script type="text/javascript" charset="utf-8" src="components/MathBox/vendor/domready.js"></script>
+  <script type="text/javascript" charset="utf-8" src="components/MathBox/build/MathBox-bundle.js"></script>
+
+  <script type="text/javascript" charset="utf-8">
+    DomReady.ready(function () {
+      if (location.href.match(/^file:/)) {
+        document.getElementById('info').style.opacity = 1;
+        document.getElementById('info').innerHTML = "Sorry. This example does not work when accessed using file://. Please use an http:// host and try again.";
+      }
+    });
+  </script>
+
+  <script type="text/javascript" charset="utf-8">
+
+
+  /**
+   * Bootstrap
+   */
+  DomReady.ready(function() {
+    ThreeBox.preload([
+      'components/MathBox/shaders/snippets.glsl.html',
+    ], function () {
+
+      // MathBox boilerplate
+      var mathbox = window.mathbox = mathBox({
+        cameraControls: true,
+        cursor:         true,
+        controlClass:   ThreeBox.OrbitControls,
+        elementResize:  true,
+        fullscreen:     true,
+        screenshot:     true,
+        stats:          false,
+        scale:          1,
+      }).start();
+
+      // Viewport camera/setup
+      mathbox
+        // Polar viewport
+        .viewport({
+          type: 'polar',
+          range: [[-π, π], [-1, 1], [-4, 4]],
+          scale: [.8, .8, .8],
+          polar: 1,
+          rotation: [τ/4, 0, 0],
+        })
+        .camera({
+          orbit: 3.5,
+          phi: τ/4+.5,
+          theta: 0.1,
+        })
+        .transition(300)
+
+      // Rotate camera continuously
+      mathbox.world().loop().hookPreRender(function () {
+        mathbox.set('camera', { phi: +new Date() * .0003 });
+      });
+
+    });
+  });
+  </script>
+
+  <style type="text/css" media="screen">
+    html, body { height: 100%; }
+    body { margin: 0; padding: 0 }
+    canvas { display: block }
+
+    #info {
+      position: absolute;
+      left: 50%;
+      bottom: 50px;
+      z-index: 20;
+
+      width: 300px;
+      margin-left: -150px;
+
+      padding: 25px;
+      background: rgba(0, 0, 0, .5);
+      color: #fff;
+
+      font-family: "Lucida Grande", sans-serif;
+      font-size: 16px;
+      text-align: center;
+
+      border-radius: 3px;
+      text-shadow: 0px 1px 0px rgba(0, 0, 0, .4);
+
+      opacity: 0;
+    }
+
+    #info kbd {
+      background: #aaa;
+
+      box-shadow: 0px 1px 1px rgba(0, 0, 0, .3);
+      border-radius: 3px;
+      padding: 3px;
+      margin: 3px;
+
+      font-family: inherit;
+    }
+  </style>
+
+</head>
+<body>
+  <div id="info"></div>
+</body>
+</html>
