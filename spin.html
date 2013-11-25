@@ -19,6 +19,19 @@
   <script type="text/javascript" charset="utf-8">
 
 
+//3D curves
+//x(t) = exp(-t/t2).cos(w.t)
+//y(t) = exp(-t/t2).sin(w.t)
+//z(t) = 1 - exp(-t/t1)
+
+// 2D curves 
+// * exp(-t/t2)
+// * 1-exp(-t/t1)
+
+// parameters
+// t1(200), t2 (100), w (2.pi/t2)
+
+
   /**
    * Bootstrap
    */
@@ -103,10 +116,17 @@
 
       font-family: inherit;
     }
+
+    #original {
+      position: absolute;
+      z-index: 10;
+    }
+
   </style>
 
 </head>
 <body>
+  <img id="original" src="relaxation.svg" width="800"/>
   <div id="info"></div>
 </body>
 </html>
