@@ -18,26 +18,34 @@
 
   <script type="text/javascript" charset="utf-8">
 
+// parameters
+var t1 = 200;
+var t2 = 100;
+var w = 2*Math.PI / t2;
 
-//3D curves
-//x(t) = exp(-t/t2).cos(w.t)
-//y(t) = exp(-t/t2).sin(w.t)
-//z(t) = 1 - exp(-t/t1)
+// 3D relaxation curve
+var relaxation = function (t) { 
+  //x(t) = exp(-t/t2).cos(w.t)
+  //y(t) = exp(-t/t2).sin(w.t)
+  //z(t) = 1 - exp(-t/t1)
+  
+  return [ 
+    -1 * Math.exp(-t / t2) * Math.sin( w * t), 
+    Math.exp(-t / t2) * Math.cos( w * t),
+    1 - Math.exp(-t / t1)
+    ]
+};
 
 // 2D curves 
 // * exp(-t/t2)
 // * 1-exp(-t/t1)
-
-// parameters
-// t1(200), t2 (100), w (2.pi/t2)
-
 
   /**
    * Bootstrap
    */
   DomReady.ready(function() {
     ThreeBox.preload([
-      'components/MathBox/shaders/snippets.glsl.html',
+      'components/MathBox/build/MathBox.glsl.html',
     ], function () {
 
       // MathBox boilerplate
@@ -54,25 +62,61 @@
 
       // Viewport camera/setup
       mathbox
-        // Polar viewport
+        // Cartesian viewport
         .viewport({
-          type: 'polar',
-          range: [[-π, π], [-1, 1], [-4, 4]],
-          scale: [.8, .8, .8],
-          polar: 1,
-          rotation: [τ/4, 0, 0],
+          type: 'cartesian',
+          range: [[-1, 1], [-1, 1], [0, 1]],
+          scale: [1, 1, 0.7],
+          rotation: [-π / 2, 0, -π / 2], 
         })
         .camera({
-          orbit: 3.5,
-          phi: τ/4+.5,
-          theta: 0.1,
+          id:'cam',
+          orbit: 5,
+          phi: 1.5 * π / 4,
+          theta: 0.7 * π / 6,
         })
         .transition(300)
 
-      // Rotate camera continuously
-      mathbox.world().loop().hookPreRender(function () {
-        mathbox.set('camera', { phi: +new Date() * .0003 });
-      });
+        // Axes
+        .axis({
+          id: 'x',
+          axis: 0,
+          color: 0xa0a0a0,
+          ticks: 0,
+          lineWidth: 2,
+          size: .05,
+          labels: false,
+        })
+        .axis({
+          id: 'y',
+          axis: 1,
+          color: 0xa0a0a0,
+          ticks: 0,
+          lineWidth: 2,
+          size: .05,
+          zero: false,
+          labels: false,
+        })
+        .axis({
+          id: 'z',
+          axis: 2,
+          color: 0xa0a0a0,
+          ticks: 0,
+          lineWidth: 2,
+          size: 0.05,
+          zero: false,
+          labels: false,
+        })
+        .curve({
+          id: 'relaxation',
+          n: 2000,
+          domain: [0, 1000],
+          expression: relaxation,
+          color: 0xfa6705,
+          line: true,
+          points: false,
+          lineWidth: 3,
+        })
 
     });
   });
