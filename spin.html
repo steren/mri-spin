@@ -40,6 +40,14 @@ var relaxation = function (t) {
 // * exp(-t/t2)
 // * 1-exp(-t/t1)
 
+// Clock that starts as soon as it is first called (per id).
+var time0;
+window.time = function () {
+  if (!time0) time0 = +new Date();
+  return t = (+new Date() - time0) * .001 * 100;
+}
+      
+
   /**
    * Bootstrap
    */
@@ -59,6 +67,10 @@ var relaxation = function (t) {
         stats:          false,
         scale:          1,
       }).start();
+
+      mathbox.world().loop().hookPreRender(function () {
+        mathbox.set('#relaxation', { domain: [0, time()] });
+      });
 
       // Viewport camera/setup
       mathbox
@@ -110,12 +122,25 @@ var relaxation = function (t) {
         .curve({
           id: 'relaxation',
           n: 2000,
-          domain: [0, 1000],
+          domain: [0, 0],
           expression: relaxation,
           color: 0xfa6705,
           line: true,
           points: false,
           lineWidth: 3,
+        })
+        .vector({
+          id:'vec',
+          color: 0x000000,
+          lineWidth : 5,
+          size: 0.1,
+          expression: function (i, end) {
+             if(end) {
+               return relaxation(time());
+             } else {
+               return 0;
+             }
+          }
         })
 
     });
