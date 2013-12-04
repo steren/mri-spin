@@ -36,15 +36,31 @@ var relaxation = function (t) {
     ]
 };
 
+
+
 // 2D curves 
-// * exp(-t/t2)
-// * 1-exp(-t/t1)
+
+// Mz(t) = 1 - exp(-t/t1)
+var relaxationMz = function(t) {
+  return 1 - Math.exp(-t / t1);
+}
+
+// Mxy(t) = exp(-t/t2)
+var relaxationMxy = function(t) {
+  return Math.exp(-t / t2);
+}
+
+
 
 // Clock that starts as soon as it is first called (per id).
 var time0;
-window.time = function () {
+var time = function () {
   if (!time0) time0 = +new Date();
   return t = (+new Date() - time0) * .001 * 100;
+}
+
+var progress = function() {
+  return Math.min(time(), 500);
 }
       
 
@@ -56,24 +72,32 @@ window.time = function () {
       'components/MathBox/build/MathBox.glsl.html',
     ], function () {
 
-      // MathBox boilerplate
-      var mathbox = window.mathbox = mathBox({
+
+      var mathbox3dGraph = window.mathbox3dGraph = mathBox(document.getElementById('graph-3d'), {
         cameraControls: true,
         cursor:         true,
         controlClass:   ThreeBox.OrbitControls,
         elementResize:  true,
-        fullscreen:     true,
-        screenshot:     true,
+        fullscreen:     false,
+        screenshot:     false,
         stats:          false,
         scale:          1,
       }).start();
 
-      mathbox.world().loop().hookPreRender(function () {
-        mathbox.set('#relaxation', { domain: [0, time()] });
-      });
+      var mathbox2dGraph = window.mathbox2dGraph = mathBox(document.getElementById('graph-2d'), {
+        cameraControls: true,
+        cursor:         true,
+        elementResize:  true,
+        fullscreen:     false,
+        screenshot:     false,
+        stats:          false,
+        scale:          1,
+      }).start();
 
-      // Viewport camera/setup
-      mathbox
+
+    // 3D Graph
+
+      mathbox3dGraph
         // Cartesian viewport
         .viewport({
           type: 'cartesian',
@@ -87,7 +111,7 @@ window.time = function () {
           phi: 1.5 * π / 4,
           theta: 0.7 * π / 6,
         })
-        .transition(300)
+        .transition(1000)
 
         // Axes
         .axis({
@@ -97,7 +121,7 @@ window.time = function () {
           ticks: 0,
           lineWidth: 2,
           size: .05,
-          labels: false,
+          labels: false
         })
         .axis({
           id: 'y',
@@ -107,7 +131,7 @@ window.time = function () {
           lineWidth: 2,
           size: .05,
           zero: false,
-          labels: false,
+          labels: false
         })
         .axis({
           id: 'z',
@@ -117,8 +141,10 @@ window.time = function () {
           lineWidth: 2,
           size: 0.05,
           zero: false,
-          labels: false,
+          labels: false
         })
+        
+        // Curve and vector
         .curve({
           id: 'relaxation',
           n: 2000,
@@ -136,13 +162,87 @@ window.time = function () {
           size: 0.1,
           expression: function (i, end) {
              if(end) {
-               return relaxation(time());
+               return relaxation(progress());
              } else {
                return 0;
              }
           }
         })
+        
+        // loop to update the domain of the curve
+        .world().loop().hookPreRender(function () {
+          mathbox3dGraph.set('#relaxation', { domain: [0, progress()] });
+        })
+        
+        
+      // 2D Graph
+        
+        var XRANGE = 300;
+        
+        mathbox2dGraph
+        // Cartesian viewport
+        
+        .viewport({
+          type: 'projective',
+          range: [[0, XRANGE], [0, 1], [0, 1]],
+          position: [0, 0, 0]
+        })
+        .camera({
+          id:'cam',
+          orbit: 7,
+          phi: τ/4,
+          theta: 0,
+          lookAt: [0.5, 0, 0], // Point of focus in space
+        })
+        .transition(1000)
 
+        // Axes
+        .axis({
+          id: 'x',
+          axis: 0,
+          color: 0xa0a0a0,
+          ticks: 0,
+          lineWidth: 2,
+          size: 1,
+          labels: false,
+          arrow: true
+        })
+        .axis({
+          id: 'y',
+          axis: 1,
+          color: 0xa0a0a0,
+          ticks: 0,
+          lineWidth: 2,
+          size: 1,
+          labels: false,
+          arrow: true
+        })
+
+        .curve({
+          id: 'relaxationMz',
+          expression: relaxationMz,
+          n: 2000,
+          domain: [0, 0],
+          color: 0x20497d,
+          line: true,
+          points: false,
+          lineWidth: 3,
+        }) 
+        .curve({
+          id: 'relaxationMxy',
+          expression: relaxationMxy,
+          n: 2000,
+          domain: [0, 0],
+          color: 0x03b7e7,
+          line: true,
+          points: false,
+          lineWidth: 3,
+        })
+        .world().loop().hookPreRender(function () {
+          mathbox2dGraph.set('#relaxationMz', { domain: [0, progress()] });
+          mathbox2dGraph.set('#relaxationMxy', { domain: [0, progress()] });
+        })
+        
     });
   });
   </script>
@@ -151,6 +251,12 @@ window.time = function () {
     html, body { height: 100%; }
     body { margin: 0; padding: 0 }
     canvas { display: block }
+
+    .graph {
+      width: 50%;
+      height: 50%;
+      float: left;
+    }
 
     #info {
       position: absolute;
@@ -189,6 +295,7 @@ window.time = function () {
     #original {
       position: absolute;
       z-index: 10;
+      opacity: 0;
     }
 
   </style>
@@ -197,5 +304,9 @@ window.time = function () {
 <body>
   <img id="original" src="relaxation.svg" width="800"/>
   <div id="info"></div>
+  
+  <div id="graph-3d" class="graph"></div>
+  <div id="graph-2d" class="graph"></div>
+  
 </body>
 </html>
