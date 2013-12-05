@@ -23,6 +23,11 @@ var t1 = 200;
 var t2 = 100;
 var w = 2*Math.PI / t2;
 
+// colors
+var darkBlue = 0x20497d;
+var lightBlue = 0x03b7e7;
+var orange = 0xfa6705;
+
 // 3D relaxation curve
 var relaxation = function (t) { 
   //x(t) = exp(-t/t2).cos(w.t)
@@ -35,7 +40,6 @@ var relaxation = function (t) {
     1 - Math.exp(-t / t1)
     ]
 };
-
 
 
 // 2D curves 
@@ -53,14 +57,17 @@ var relaxationMxy = function(t) {
 
 
 // Clock that starts as soon as it is first called (per id).
+
+var timeAcceleration = 200;
+
 var time0;
 var time = function () {
   if (!time0) time0 = +new Date();
-  return t = (+new Date() - time0) * .001 * 100;
+  return t = (+new Date() - time0) * .001;
 }
 
 var progress = function() {
-  return Math.min(time(), 500);
+  return timeAcceleration * Math.min(time(), 2.5);
 }
       
 
@@ -117,7 +124,7 @@ var progress = function() {
         .axis({
           id: 'x',
           axis: 0,
-          color: 0xa0a0a0,
+          color: lightBlue,
           ticks: 0,
           lineWidth: 2,
           size: .05,
@@ -126,7 +133,7 @@ var progress = function() {
         .axis({
           id: 'y',
           axis: 1,
-          color: 0xa0a0a0,
+          color: lightBlue,
           ticks: 0,
           lineWidth: 2,
           size: .05,
@@ -136,7 +143,7 @@ var progress = function() {
         .axis({
           id: 'z',
           axis: 2,
-          color: 0xa0a0a0,
+          color: darkBlue,
           ticks: 0,
           lineWidth: 2,
           size: 0.05,
@@ -150,7 +157,7 @@ var progress = function() {
           n: 2000,
           domain: [0, 0],
           expression: relaxation,
-          color: 0xfa6705,
+          color: orange,
           line: true,
           points: false,
           lineWidth: 3,
@@ -158,7 +165,7 @@ var progress = function() {
         .vector({
           id:'vec',
           color: 0x000000,
-          lineWidth : 5,
+          lineWidth : 3,
           size: 0.1,
           expression: function (i, end) {
              if(end) {
@@ -223,7 +230,7 @@ var progress = function() {
           expression: relaxationMz,
           n: 2000,
           domain: [0, 0],
-          color: 0x20497d,
+          color: darkBlue,
           line: true,
           points: false,
           lineWidth: 3,
@@ -233,7 +240,7 @@ var progress = function() {
           expression: relaxationMxy,
           n: 2000,
           domain: [0, 0],
-          color: 0x03b7e7,
+          color: lightBlue,
           line: true,
           points: false,
           lineWidth: 3,
@@ -254,7 +261,7 @@ var progress = function() {
 
     .graph {
       width: 50%;
-      height: 50%;
+      height: 100%;
       float: left;
     }
 
