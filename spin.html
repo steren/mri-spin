@@ -18,57 +18,140 @@
 
   <script type="text/javascript" charset="utf-8">
 
+var curvesOpacity = 0.3;
+
 // parameters
-var t1 = 200;
-var t2 = 100;
-var w = 2*Math.PI / t2;
+var t1a = 200;
+var t2a = 100;
+var w = 2*Math.PI / t2a;
+
+var t1b = 400;
+var t2b = 150;
 
 // colors
 var darkBlue = 0x20497d;
 var lightBlue = 0x03b7e7;
 var orange = 0xfa6705;
 
+var generateRelaxationEpression = function(t1, t2, w) {
+  return function (t) { 
+    //x(t) = exp(-t/t2).cos(w.t)
+    //y(t) = exp(-t/t2).sin(w.t)
+    //z(t) = 1 - exp(-t/t1)
+    
+    return [ 
+      -1 * Math.exp(-t / t2) * Math.sin( w * t), 
+      Math.exp(-t / t2) * Math.cos( w * t),
+      1 - Math.exp(-t / t1)
+      ]
+  };
+}
+
 // 3D relaxation curve
-var relaxation = function (t) { 
-  //x(t) = exp(-t/t2).cos(w.t)
-  //y(t) = exp(-t/t2).sin(w.t)
-  //z(t) = 1 - exp(-t/t1)
-  
-  return [ 
-    -1 * Math.exp(-t / t2) * Math.sin( w * t), 
-    Math.exp(-t / t2) * Math.cos( w * t),
-    1 - Math.exp(-t / t1)
-    ]
-};
+var relaxation = generateRelaxationEpression(t1a, t2a, w);
+var relaxationB = generateRelaxationEpression(t1b, t2b, w);
 
 
 // 2D curves 
 
 // Mz(t) = 1 - exp(-t/t1)
-var relaxationMz = function(t) {
-  return 1 - Math.exp(-t / t1);
+generateRelaxationMz = function(t1) {
+  return function(t) {
+    return 1 - Math.exp(-t / t1);
+  }
 }
 
 // Mxy(t) = exp(-t/t2)
-var relaxationMxy = function(t) {
-  return Math.exp(-t / t2);
+generateRelaxationMxy = function(t2) {
+  return  function(t) {
+    return Math.exp(-t / t2);
+  }
 }
 
+var relaxationMz = generateRelaxationMz(t1a);
+var relaxationMxy = generateRelaxationMxy(t2a);
+
+var relaxationMzB = generateRelaxationMz(t1b);
+var relaxationMxyB = generateRelaxationMxy(t2b);
 
 
 // Clock that starts as soon as it is first called (per id).
 
 var timeAcceleration = 200;
 
-var time0;
-var time = function () {
-  if (!time0) time0 = +new Date();
-  return t = (+new Date() - time0) * .001;
+var progress = function(time) {
+  return timeAcceleration * Math.min(time, 5);
 }
 
-var progress = function() {
-  return timeAcceleration * Math.min(time(), 2.5);
-}
+var script3d = [
+    [
+      // instead of using a world preender hook, try to use animate
+      //['animate', '#relaxation', {
+      //  domain: [0, 200*2.5]
+      //}, {
+      //  duration : 2500
+      //}],
+      ['set', '#vec', {
+        data: null,
+        expression: function (i, end) {
+           if(end) {
+             return relaxation(progress(window.director3d.clock(1)));
+           } else {
+             return 0;
+           }
+        }
+      }],
+    ],
+    [
+      ['set', '#relaxation', {
+          opacity: 0
+        }
+      ],
+      ['set', '#vec', {
+          opacity: 0
+        }
+      ],
+      ['set', '#vecA', {
+        opacity: 1,
+        data: null,
+        expression: function (i, end) {
+           if(end) {
+             return relaxation(progress(window.director3d.clock(2)));
+           } else {
+             return 0;
+           }
+        }
+      }],
+      
+      ['set', '#vecB', {
+        opacity : curvesOpacity,
+        data: null,
+        expression: function (i, end) {
+           if(end) {
+             return relaxationB(progress(window.director3d.clock(2)));
+           } else {
+             return 0;
+           }
+        }
+      }],
+    ]
+ ];
+
+
+
+var script2d = [
+  [],
+  [
+    ['set', '#relaxationMz', {
+        opacity: 0
+      }
+    ],
+    ['set', '#relaxationMxy', {
+        opacity: 0
+      }
+    ]
+  ]
+];
       
 
   /**
@@ -78,7 +161,6 @@ var progress = function() {
     ThreeBox.preload([
       'components/MathBox/build/MathBox.glsl.html',
     ], function () {
-
 
       var mathbox3dGraph = window.mathbox3dGraph = mathBox(document.getElementById('graph-3d'), {
         cameraControls: true,
@@ -101,6 +183,25 @@ var progress = function() {
         scale:          1,
       }).start();
 
+
+window.director3d = new MathBox.Director(mathbox3dGraph, script3d);
+window.director2d = new MathBox.Director(mathbox2dGraph, script2d);
+
+ director3d;
+
+window.addEventListener('keydown', function (e) {
+  if (e.keyCode == 38 || e.keyCode == 37) {
+    director2d.back();
+    director3d.back();
+  }
+  else if (e.keyCode == 40 || e.keyCode == 39) {
+    director2d.forward();
+    director3d.forward();
+  }
+  else {
+    return;
+  }
+});
 
     // 3D Graph
 
@@ -151,7 +252,33 @@ var progress = function() {
           labels: false
         })
         
-        // Curve and vector
+        
+        .vector({
+          id:'vec',
+          color: 0x000000,
+          lineWidth : 3,
+          size: 0.1,
+          data: [[0,0,0], [0,0,1]],
+        })
+
+        .vector({
+          id:'vecA',
+          color: 0x000000,
+          lineWidth : 3,
+          size: 0.1,
+          data: [[0,0,0], [0,0,1]],
+          opacity: 0
+        })
+        
+        .vector({
+          id:'vecB',
+          color: 0x000000,
+          lineWidth : 3,
+          size: 0.1,
+          data: [[0,0,0], [0,0,1]],
+          opacity: 0
+        })
+        
         .curve({
           id: 'relaxation',
           n: 2000,
@@ -162,23 +289,35 @@ var progress = function() {
           points: false,
           lineWidth: 3,
         })
-        .vector({
-          id:'vec',
-          color: 0x000000,
-          lineWidth : 3,
-          size: 0.1,
-          expression: function (i, end) {
-             if(end) {
-               return relaxation(progress());
-             } else {
-               return 0;
-             }
-          }
+
+        .curve({
+          id: 'relaxationA',
+          n: 2000,
+          domain: [0, 0],
+          expression: relaxation,
+          color: orange,
+          line: true,
+          points: false,
+          lineWidth: 3,
+          opacity: 1,
         })
-        
+        .curve({
+          id: 'relaxationB',
+          n: 2000,
+          domain: [0, 0],
+          expression: relaxationB,
+          color: orange,
+          line: true,
+          points: false,
+          lineWidth: 3,
+          opacity: curvesOpacity,
+        })
+
         // loop to update the domain of the curve
         .world().loop().hookPreRender(function () {
-          mathbox3dGraph.set('#relaxation', { domain: [0, progress()] });
+          mathbox3dGraph.set('#relaxation', { domain: [0, progress(window.director3d.clock(1))] });
+          mathbox3dGraph.set('#relaxationA', { domain: [0, progress(window.director3d.clock(2))] });
+          mathbox3dGraph.set('#relaxationB', { domain: [0, progress(window.director3d.clock(2))] });
         })
         
         
@@ -224,7 +363,7 @@ var progress = function() {
           labels: false,
           arrow: true
         })
-
+        
         .curve({
           id: 'relaxationMz',
           expression: relaxationMz,
@@ -234,7 +373,7 @@ var progress = function() {
           line: true,
           points: false,
           lineWidth: 3,
-        }) 
+        })
         .curve({
           id: 'relaxationMxy',
           expression: relaxationMxy,
@@ -245,9 +384,59 @@ var progress = function() {
           points: false,
           lineWidth: 3,
         })
+
+        .curve({
+          id: 'relaxationMzA',
+          expression: relaxationMz,
+          n: 2000,
+          domain: [0, 0],
+          color: darkBlue,
+          line: true,
+          points: false,
+          lineWidth: 3,
+        })
+        .curve({
+          id: 'relaxationMxyA',
+          expression: relaxationMxy,
+          n: 2000,
+          domain: [0, 0],
+          color: lightBlue,
+          line: true,
+          points: false,
+          lineWidth: 3,
+        })
+        
+        .curve({
+          id: 'relaxationMzB',
+          expression: relaxationMzB,
+          n: 2000,
+          domain: [0, 0],
+          color: darkBlue,
+          line: true,
+          points: false,
+          lineWidth: 3,
+          opacity: curvesOpacity,
+        })
+        .curve({
+          id: 'relaxationMxyB',
+          expression: relaxationMxyB,
+          n: 2000,
+          domain: [0, 0],
+          color: lightBlue,
+          line: true,
+          points: false,
+          lineWidth: 3,
+          opacity: curvesOpacity,
+        })
+
         .world().loop().hookPreRender(function () {
-          mathbox2dGraph.set('#relaxationMz', { domain: [0, progress()] });
-          mathbox2dGraph.set('#relaxationMxy', { domain: [0, progress()] });
+          mathbox2dGraph.set('#relaxationMz', { domain: [0, progress(window.director2d.clock(1))] });
+          mathbox2dGraph.set('#relaxationMxy', { domain: [0, progress(window.director2d.clock(1))] });
+
+          mathbox2dGraph.set('#relaxationMzA', { domain: [0, progress(window.director2d.clock(2))] });
+          mathbox2dGraph.set('#relaxationMxyA', { domain: [0, progress(window.director2d.clock(2))] });
+          mathbox2dGraph.set('#relaxationMzB', { domain: [0, progress(window.director2d.clock(2))] });
+          mathbox2dGraph.set('#relaxationMxyB', { domain: [0, progress(window.director2d.clock(2))] });
         })
         
     });
