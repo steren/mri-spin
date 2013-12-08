@@ -200,6 +200,8 @@ var script2d = [
       'components/MathBox/build/MathBox.glsl.html',
     ], function () {
 
+      document.getElementById('info').style.opacity = '1';
+
       var mathbox3dGraph = window.mathbox3dGraph = mathBox(document.getElementById('graph-3d'), {
         cameraControls: true,
         cursor:         true,
@@ -225,8 +227,14 @@ var script2d = [
 window.director3d = new MathBox.Director(mathbox3dGraph, script3d);
 window.director2d = new MathBox.Director(mathbox2dGraph, script2d);
 
+window.addEventListener('touchstart', function (e) {
+  director2d.forward();
+  director3d.forward();
+  document.getElementById('info').style.opacity = '0';
+});
 
 window.addEventListener('keydown', function (e) {
+        
   if (e.keyCode == 38 || e.keyCode == 37) {
     director2d.back();
     director3d.back();
@@ -238,6 +246,9 @@ window.addEventListener('keydown', function (e) {
   else {
     return;
   }
+  
+  document.getElementById('info').style.opacity = '0';
+
 });
 
     // 3D Graph
@@ -513,6 +524,10 @@ window.addEventListener('keydown', function (e) {
       text-shadow: 0px 1px 0px rgba(0, 0, 0, .4);
 
       opacity: 0;
+
+      -webkit-transition: opacity 300ms ease-in-out;
+      -moz-transition: opacity 300ms ease-in-out;
+      transition: opacity 300ms ease-in-out;
     }
 
     #info kbd {
@@ -537,7 +552,8 @@ window.addEventListener('keydown', function (e) {
 </head>
 <body>
   <img id="original" src="relaxation.svg" width="800"/>
-  <div id="info"></div>
+  
+  <div id="info">Use the <kbd>←</kbd><kbd>→</kbd> keys to step through.</div>
   
   <div id="graph-3d" class="graph"></div>
   <div id="graph-2d" class="graph"></div>
