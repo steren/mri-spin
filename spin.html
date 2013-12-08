@@ -140,16 +140,54 @@ var script3d = [
 
 
 var script2d = [
-  [],
   [
-    ['set', '#relaxationMz', {
+    ['add', 'vector', {
+      id : 'tangentT1',
+      data: [[0,0], [t1a,1]],
+      arrow: false,
+      color: darkBlue,
+      opacity: 0.8
+    },{
+        duration: 2000,
+        delay: 3000,
+    }],
+    ['add', 'vector', {
+      id : 'tangentT2',
+      data: [[0,1], [t2a,0]],
+      arrow: false,
+      color: lightBlue,
+      opacity: 0.8
+    },{
+        duration: 2000,
+        delay: 4000,
+    }]
+  ],
+  [
+    ['animate', '#relaxationMz', {
         opacity: 0
+      }, {
+        duration: 200
       }
     ],
-    ['set', '#relaxationMxy', {
+    ['animate', '#relaxationMxy', {
         opacity: 0
+      }, {
+        duration: 200
       }
-    ]
+    ],
+    ['animate', '#tangentT1', {
+        opacity: 0
+      }, {
+        duration: 200
+      }
+    ],
+    ['animate', '#tangentT2', {
+        opacity: 0
+      }, {
+        duration: 200
+      }
+    ],
+
   ]
 ];
       
@@ -187,7 +225,6 @@ var script2d = [
 window.director3d = new MathBox.Director(mathbox3dGraph, script3d);
 window.director2d = new MathBox.Director(mathbox2dGraph, script2d);
 
- director3d;
 
 window.addEventListener('keydown', function (e) {
   if (e.keyCode == 38 || e.keyCode == 37) {
@@ -325,6 +362,7 @@ window.addEventListener('keydown', function (e) {
         
         var XRANGE = 300;
         
+
         mathbox2dGraph
         // Cartesian viewport
         
@@ -349,7 +387,7 @@ window.addEventListener('keydown', function (e) {
           color: 0xa0a0a0,
           ticks: 0,
           lineWidth: 2,
-          size: 1,
+          size: 0.05,
           labels: false,
           arrow: true
         })
@@ -359,7 +397,7 @@ window.addEventListener('keydown', function (e) {
           color: 0xa0a0a0,
           ticks: 0,
           lineWidth: 2,
-          size: 1,
+          size: 0.05,
           labels: false,
           arrow: true
         })
