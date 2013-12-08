@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta property="og:image" content="http://steren.github.io/mri-spin/thumb.png"/>
   <title>MRI Spin</title>
 
   <script type="text/javascript" charset="utf-8" src="components/MathBox/vendor/domready.js"></script>
@@ -34,13 +35,13 @@ var lightBlue = 0x03b7e7;
 var orange = 0xfa6705;
 
 var generateRelaxationEpression = function(t1, t2, w) {
-  return function (t) { 
+  return function (t) {
     //x(t) = exp(-t/t2).cos(w.t)
     //y(t) = exp(-t/t2).sin(w.t)
     //z(t) = 1 - exp(-t/t1)
-    
-    return [ 
-      -1 * Math.exp(-t / t2) * Math.sin( w * t), 
+
+    return [
+      -1 * Math.exp(-t / t2) * Math.sin( w * t),
       Math.exp(-t / t2) * Math.cos( w * t),
       1 - Math.exp(-t / t1)
       ]
@@ -52,7 +53,7 @@ var relaxation = generateRelaxationEpression(t1a, t2a, w);
 var relaxationB = generateRelaxationEpression(t1b, t2b, w);
 
 
-// 2D curves 
+// 2D curves
 
 // Mz(t) = 1 - exp(-t/t1)
 generateRelaxationMz = function(t1) {
@@ -122,7 +123,7 @@ var script3d = [
            }
         }
       }],
-      
+
       ['set', '#vecB', {
         opacity : curvesOpacity,
         data: null,
@@ -190,7 +191,7 @@ var script2d = [
 
   ]
 ];
-      
+
 
   /**
    * Bootstrap
@@ -234,7 +235,7 @@ window.addEventListener('touchstart', function (e) {
 });
 
 window.addEventListener('keydown', function (e) {
-        
+
   if (e.keyCode == 38 || e.keyCode == 37) {
     director2d.back();
     director3d.back();
@@ -246,7 +247,7 @@ window.addEventListener('keydown', function (e) {
   else {
     return;
   }
-  
+
   document.getElementById('info').style.opacity = '0';
 
 });
@@ -259,7 +260,7 @@ window.addEventListener('keydown', function (e) {
           type: 'cartesian',
           range: [[-1, 1], [-1, 1], [0, 1]],
           scale: [1, 1, 0.7],
-          rotation: [-π / 2, 0, -π / 2], 
+          rotation: [-π / 2, 0, -π / 2],
         })
         .camera({
           id:'cam',
@@ -299,8 +300,8 @@ window.addEventListener('keydown', function (e) {
           zero: false,
           labels: false
         })
-        
-        
+
+
         .vector({
           id:'vec',
           color: 0x000000,
@@ -317,7 +318,7 @@ window.addEventListener('keydown', function (e) {
           data: [[0,0,0], [0,0,1]],
           opacity: 0
         })
-        
+
         .vector({
           id:'vecB',
           color: 0x000000,
@@ -326,7 +327,7 @@ window.addEventListener('keydown', function (e) {
           data: [[0,0,0], [0,0,1]],
           opacity: 0
         })
-        
+
         .curve({
           id: 'relaxation',
           n: 2000,
@@ -367,16 +368,16 @@ window.addEventListener('keydown', function (e) {
           mathbox3dGraph.set('#relaxationA', { domain: [0, progress(window.director3d.clock(2))] });
           mathbox3dGraph.set('#relaxationB', { domain: [0, progress(window.director3d.clock(2))] });
         })
-        
-        
+
+
       // 2D Graph
-        
+
         var XRANGE = 300;
-        
+
 
         mathbox2dGraph
         // Cartesian viewport
-        
+
         .viewport({
           type: 'projective',
           range: [[0, XRANGE], [0, 1], [0, 1]],
@@ -412,7 +413,7 @@ window.addEventListener('keydown', function (e) {
           labels: false,
           arrow: true
         })
-        
+
         .curve({
           id: 'relaxationMz',
           expression: relaxationMz,
@@ -454,7 +455,7 @@ window.addEventListener('keydown', function (e) {
           points: false,
           lineWidth: 3,
         })
-        
+
         .curve({
           id: 'relaxationMzB',
           expression: relaxationMzB,
@@ -487,7 +488,7 @@ window.addEventListener('keydown', function (e) {
           mathbox2dGraph.set('#relaxationMzB', { domain: [0, progress(window.director2d.clock(2))] });
           mathbox2dGraph.set('#relaxationMxyB', { domain: [0, progress(window.director2d.clock(2))] });
         })
-        
+
     });
   });
   </script>
@@ -552,11 +553,11 @@ window.addEventListener('keydown', function (e) {
 </head>
 <body>
   <img id="original" src="relaxation.svg" width="800"/>
-  
+
   <div id="info">Use the <kbd>←</kbd><kbd>→</kbd> keys to step through.</div>
-  
+
   <div id="graph-3d" class="graph"></div>
   <div id="graph-2d" class="graph"></div>
-  
+
 </body>
 </html>
